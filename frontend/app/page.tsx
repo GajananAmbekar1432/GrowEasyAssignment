@@ -18,6 +18,7 @@ export default function Page() {
 
   const { setLeads, setIsPreviewing, setLastImportResult } = useLeads();
 
+  const [processingMessage, setProcessingMessage] = useState(""); //c
   const handleParsed = (data: any[]) => {
     setRecords(data);
     setResult(null);
@@ -51,6 +52,7 @@ export default function Page() {
   const handleConfirmLocal = async () => {
     // persist locally and to API
     setLoading(true);
+    setProcessingMessage("AI is processing your CSV and extracting CRM data...");//c
     try {
       const apiRoot = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       // send in batches with retry
@@ -61,10 +63,15 @@ export default function Page() {
       let allRecords: any[] = [];
 
       for (let i = 0; i < records.length; i += batchSize) {
-        const batch = records.slice(i, i + batchSize);
-        let attempt = 0;
-        let success = false;
-        let lastErr: any = null;
+  const batch = records.slice(i, i + batchSize);
+
+  setProcessingMessage(
+    `AI is processing records ${Math.min(i + batch.length, records.length)} of ${records.length}...`
+  );
+
+  let attempt = 0;
+  let success = false;
+  let lastErr: any = null;
         while (attempt < maxRetries && !success) {
           attempt += 1;
           try {
@@ -95,10 +102,16 @@ export default function Page() {
       // store last import summary so Manage page can render the cards
       setLastImportResult?.(data ?? null);
       // clear preview flag and redirect to Manage Leads after successful import
-      if (data && data.success) {
-        setIsPreviewing(false);
-        router.push('/manage');
-      }
+     if (data && data.success) {
+  setProcessingMessage("Finalizing import and preparing Manage Leads...");
+
+  setIsPreviewing(false);
+
+  // Optional: give the user a brief moment to see the message
+  await new Promise((resolve) => setTimeout(resolve, 800));
+
+  router.push('/manage');
+}
     } catch (err: any) {
       setResult({ success: false, message: err.message });
     } finally {
@@ -157,11 +170,36 @@ export default function Page() {
       )}
       
 
-      {result && (
+      {/* {result && (
         <section className="space-y-4">
           <SummaryCards result={result} />
         </section>
-      )}
+      )} */}
+
+
+      {loading && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl dark:bg-slate-900">
+      <div className="flex flex-col items-center">
+
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-slate-200 border-t-emerald-500" />
+
+        <h3 className="mt-6 text-xl font-semibold text-slate-900 dark:text-white">
+          AI Processing
+        </h3>
+
+        <p className="mt-3 text-center text-sm text-slate-600 dark:text-slate-300">
+          {processingMessage}
+        </p>
+
+        <p className="mt-5 text-xs text-slate-500 dark:text-slate-400">
+          Please don't close or refresh this page.
+        </p>
+
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
