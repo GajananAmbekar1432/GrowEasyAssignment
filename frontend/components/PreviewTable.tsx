@@ -1,5 +1,6 @@
 "use client";
 import React, { useMemo, useState } from 'react';
+import { getOrderedColumns } from '../utils/tableColumns';
 
 type Props = { data: any[]; onConfirm?: () => void; confirmLoading?: boolean; onCancel?: () => void };
 
@@ -21,7 +22,7 @@ export default function PreviewTable({ data, onConfirm, confirmLoading, onCancel
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage = Math.min(page, pages);
   const slice = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
-  const columns = filtered[0] ? Object.keys(filtered[0]) : [];
+  const columns = getOrderedColumns(filtered as Array<Record<string, any>>);
 
   // virtualization calculations
   React.useEffect(() => {

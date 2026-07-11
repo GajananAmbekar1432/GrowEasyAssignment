@@ -27,9 +27,27 @@ Environment
 Create `.env` files set:
 
 ```
-GEMINI_API_KEY=
+We provide example env files in the repo. Copy the appropriate example and fill in secrets:
+
+Backend (create `backend/.env` from `backend/.env.example`):
+
+```
+
+GEMINI_API_KEY=your_gemini_api_key_here
 GEMINI_MODEL=gemini-1.5-flash
 PORT=5000
+
+```
+
+Frontend (create `frontend/.env.local` from `frontend/.env.example`):
+
+```
+
+NEXT_PUBLIC_API_URL=http://localhost:5000
+
+```
+
+Important: do NOT commit your real `.env` files. The repo includes `*.example` files safe to commit.
 ```
 
 Local development

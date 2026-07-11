@@ -4,7 +4,7 @@ import React from 'react';
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <div className="text-sm text-slate-500">Total Leads</div>
           <div className="mt-2 text-2xl font-semibold">1,234</div>
@@ -19,7 +19,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <div className="text-sm text-slate-500">Leads Over Time</div>
           <div className="mt-4 h-40 flex items-end gap-2">
@@ -48,7 +48,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <div className="text-sm text-slate-500">AI Processing Time (last 30)</div>
           <div className="mt-4 h-40">
@@ -62,7 +62,7 @@ export default function DashboardPage() {
 
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <div className="text-sm text-slate-500">Import Status</div>
-          <div className="mt-4 flex items-center gap-6">
+          <div className="mt-4 flex flex-col gap-6 sm:flex-row sm:items-center">
             <div className="flex-shrink-0">
               <svg width="120" height="120" viewBox="0 0 32 32">
                 <circle r="16" cx="16" cy="16" fill="#0f1724" opacity="0.06" />

@@ -1,12 +1,14 @@
 "use client";
 import React from 'react';
 import { useLeads } from '../../components/LeadsProvider';
+import { getOrderedColumns } from '../../utils/tableColumns';
 
 export default function ManagePage() {
   const { leads } = useLeads();
   const { lastImportResult } = useLeads();
 
   const result = lastImportResult ?? { records: leads, imported: leads.length, skipped: 0, processingTimeMs: 0 };
+  const columns = getOrderedColumns(leads as Array<Record<string, any>>);
 
   return (
     <div className="space-y-6">
@@ -40,12 +42,7 @@ export default function ManagePage() {
               <table className="min-w-full">
                 <thead>
                   <tr className="text-left text-xs text-slate-500">
-                    {Array.from(
-                      leads.reduce((keys, r) => {
-                        Object.keys(r || {}).forEach((k) => keys.add(k));
-                        return keys;
-                      }, new Set<string>())
-                    ).map((col) => (
+                    {columns.map((col) => (
                       <th key={col} className="p-3 align-top">{col}</th>
                     ))}
                   </tr>
@@ -53,12 +50,7 @@ export default function ManagePage() {
                 <tbody>
                   {leads.map((r, i) => (
                     <tr key={i} className="border-t">
-                      {Array.from(
-                        leads.reduce((keys, r) => {
-                          Object.keys(r || {}).forEach((k) => keys.add(k));
-                          return keys;
-                        }, new Set<string>())
-                      ).map((col) => (
+                      {columns.map((col) => (
                         <td key={col} className="p-3 align-top">{String((r as any)[col] ?? '')}</td>
                       ))}
                     </tr>

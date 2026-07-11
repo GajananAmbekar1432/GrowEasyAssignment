@@ -61,8 +61,45 @@ const extractEmails = (value: string) => {
 };
 
 const extractPhones = (value: string) => {
-  const matches = value.match(/\+?\d(?:[\s().-]?\d){6,14}/g) ?? [];
-  return unique(matches.map((item) => normalizePhone(item)));
+  if (!value) return [];
+  const rawMatches = value.match(/[+\d][\d\s().-]{6,}/g) ?? [];
+
+  const results: string[] = [];
+
+  const splitLongNumber = (digits: string) => {
+    const out: string[] = [];
+    let s = digits;
+    // greedy split from the end into common phone lengths
+    const prefs = [10, 9, 8, 7];
+    while (s.length >= 7) {
+      let taken: string | null = null;
+      for (const len of prefs) {
+        if (s.length - len >= 0) {
+          taken = s.slice(-len);
+          s = s.slice(0, -len);
+          out.push(taken);
+          break;
+        }
+      }
+      if (!taken) break;
+    }
+    // if some leftover digits <7, discard them
+    return out.reverse();
+  };
+
+  rawMatches.forEach((m) => {
+    const digits = (m.match(/\d+/g) ?? []).join('');
+    if (!digits) return;
+    if (digits.length <= 15) {
+      results.push(digits);
+    } else {
+      // likely concatenated numbers, attempt to split
+      const parts = splitLongNumber(digits);
+      results.push(...parts);
+    }
+  });
+
+  return unique(results.map((item) => normalizePhone(item)));
 };
 
 const firstValid = (...values: string[]) => values.find((value) => Boolean(value)) ?? '';
@@ -83,13 +120,40 @@ const buildFallbackRecord = (record: Record<string, any>) => {
   const emailCandidates = unique([
     ...extractEmails(normalized.email ?? ''),
   ]);
-  const phoneCandidates = unique([
-    ...(normalized.mobile_without_country_code ? [normalizePhone(normalized.mobile_without_country_code)] : []),
-    ...(normalized.phone ? [normalizePhone(normalized.phone)] : []),
-  ]);
+  // Collect phone candidates from common fields and by scanning all fields for phone-like patterns.
+  const phoneSet = new Set<string>();
+
+  const tryAddPhones = (val: string | undefined) => {
+    if (!val) return;
+    // extractPhones returns normalized numbers (digits only)
+    const found = extractPhones(val).map((p) => normalizePhone(p));
+    found.forEach((p) => {
+      if (p) phoneSet.add(p);
+    });
+  };
+
+  // Check common fields
+  tryAddPhones(normalized.mobile_without_country_code);
+  tryAddPhones(normalized.phone);
+  tryAddPhones(normalized.mobile);
+
+  // Also scan any other fields that might contain contact numbers
+  Object.entries(normalized).forEach(([k, v]) => {
+    if (!v) return;
+    if (CONTACT_KEY_PATTERN.test(k) || /phone|mobile|mob|tel/i.test(k)) {
+      tryAddPhones(v);
+    }
+  });
+
+  const phoneCandidates = Array.from(phoneSet);
+
+  const isValidPhone = (p: string) => p.length >= 7 && p.length <= 15;
+
+  // Prefer first valid-length phone, otherwise the first candidate
+  const primaryPhone = phoneCandidates.find(isValidPhone) ?? phoneCandidates[0] ?? '';
 
   const primaryEmail = firstValid(...emailCandidates);
-  const primaryPhone = firstValid(...phoneCandidates);
+  // primaryPhone already computed above
 
   if (!primaryEmail && !primaryPhone) {
     return null;
@@ -118,6 +182,12 @@ const buildFallbackRecord = (record: Record<string, any>) => {
     noteParts.push(...extraFields);
   }
 
+  // Preserve the original crm_note from CSV as-is, and append detected extras.
+  const originalNote = normalized.crm_note ?? '';
+  const crmNoteFinal = originalNote
+    ? [originalNote, ...noteParts].join(' | ')
+    : noteParts.join(' | ');
+
   return {
     created_at: normalized.created_at ?? '',
     name: normalized.name ?? '',
@@ -130,7 +200,7 @@ const buildFallbackRecord = (record: Record<string, any>) => {
     country: normalized.country ?? '',
     lead_owner: normalized.lead_owner ?? '',
     crm_status: sanitizeAllowedValue(normalized.crm_status ?? '', allowedStatuses),
-    crm_note: noteParts.join(' | '),
+    crm_note: crmNoteFinal,
     data_source: sanitizeAllowedValue(normalized.data_source ?? '', allowedDataSources),
     possession_time: normalized.possession_time ?? '',
     description: normalized.description ?? '',

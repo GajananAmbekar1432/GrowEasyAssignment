@@ -16,11 +16,11 @@ export default function ImportModal({ open, onClose, records, setRecords, onConf
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center sm:p-6">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
-      <div className="relative w-[92%] max-w-2xl rounded-2xl bg-white p-6 shadow-[0_30px_60px_rgba(15,23,42,0.25)]">
-        <div className="flex items-start justify-between">
+      <div className="relative max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl bg-white p-4 shadow-[0_30px_60px_rgba(15,23,42,0.25)] sm:p-6">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h3 className="text-lg font-semibold text-slate-900">Import Leads via CSV</h3>
             <p className="mt-1 text-sm text-slate-500">Upload a CSV file to bulk import leads into your system.</p>
@@ -30,12 +30,12 @@ export default function ImportModal({ open, onClose, records, setRecords, onConf
           </button>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 max-h-[60vh] overflow-auto pr-1">
           {records.length === 0 ? (
             <div className="rounded-2xl border border-slate-200 p-6">
               <UploadBox onParsed={(d) => setRecords(d)} onFileName={() => {}} />
 
-              <div className="mt-4 flex items-center justify-between">
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="text-sm text-slate-500">Supported file: .csv (max 5MB)</div>
                 <a href="#" className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">Download Sample CSV Template</a>
               </div>
@@ -57,7 +57,7 @@ export default function ImportModal({ open, onClose, records, setRecords, onConf
           )}
         </div>
 
-        <div className="mt-6 flex items-center justify-end gap-3">
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
           <button onClick={() => { setRecords([]); onClose(); }} className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-700">
             Cancel
           </button>
