@@ -22,7 +22,10 @@ export default function PreviewTable({ data, onConfirm, confirmLoading, onCancel
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage = Math.min(page, pages);
   const slice = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
-  const columns = getOrderedColumns(filtered as Array<Record<string, any>>);
+ const columns = React.useMemo(() => {
+  if (!filtered.length) return [];
+  return Object.keys(filtered[0]);
+}, [filtered]); 
 
   // virtualization calculations
   React.useEffect(() => {

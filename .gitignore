@@ -34,6 +34,7 @@ dist/
 .DS_Store
 .env
 .env.local
+.env.example
 .env.*.local
 .vscode/
 .idea/

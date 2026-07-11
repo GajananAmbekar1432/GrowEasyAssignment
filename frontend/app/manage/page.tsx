@@ -8,8 +8,30 @@ export default function ManagePage() {
   const { lastImportResult } = useLeads();
 
   const result = lastImportResult ?? { records: leads, imported: leads.length, skipped: 0, processingTimeMs: 0 };
-  const columns = getOrderedColumns(leads as Array<Record<string, any>>);
+  // const columns = getOrderedColumns(leads as Array<Record<string, any>>);
+const preferredOrder = [
+  "name",
+  "company",
+  "email",
+  "country_code",
+  "mobile_without_country_code",
+  "city",
+  "state",
+  "country",
+  "lead_owner",
+  "crm_status",
+  "crm_note",
+  "data_source",
+  "description",
+  "created_at",
+];
 
+const allColumns = getOrderedColumns(leads as Array<Record<string, any>>);
+
+const columns = [
+  ...preferredOrder.filter((col) => allColumns.includes(col)),
+  ...allColumns.filter((col) => !preferredOrder.includes(col)),
+];
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
