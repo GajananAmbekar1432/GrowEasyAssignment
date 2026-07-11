@@ -47,7 +47,3 @@ dist/
 coverage/
 /.turbo/
 
-#########################
-# Docker
-#########################
-docker-compose.override.yml

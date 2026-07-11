@@ -55,10 +55,6 @@ Local development
 - Frontend: `cd frontend && npm install && npm run dev`
 - Backend: `cd backend && npm install && npm run dev`
 
-Docker
-
-- `docker-compose up --build` will run both services (when docker files are present)
-
 Testing
 
 - Unit tests for backend services will live in `backend/src/__tests__` and run with `npm test`.
@@ -70,7 +66,6 @@ Current implemented extras
 - Batch import with retry logic for transient failures
 - Lightweight table virtualization to handle large CSVs in the preview
 - Dark mode toggle in the header (class-based Tailwind dark mode)
-- Dockerfiles for frontend and backend and `docker-compose.yml`
 
 Next steps (optional enhancements)
 
