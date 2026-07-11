@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-pro';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent`;
-const GEMINI_ENABLED = Boolean(GEMINI_API_KEY);
+const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
+const GROQ_MODEL = process.env.GROQ_MODEL || 'gemma-7b-it';
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_ENABLED = Boolean(GROQ_API_KEY);
 
 const CRM_FIELDS = new Set([
   'created_at',
@@ -297,54 +297,55 @@ Put inside crm_note.
 
 Return ONLY JSON array.`;
 
-const callGemini = async (input: any[], requestId: string, batchIndex: number) => {
-  if (!GEMINI_ENABLED) {
-    console.error(`[import:${requestId}] gemini config missing`, {
+const callGroq = async (input: any[], requestId: string, batchIndex: number) => {
+  if (!GROQ_ENABLED) {
+    console.error(`[import:${requestId}] groq config missing`, {
       batchIndex,
-      model: GEMINI_MODEL,
+      model: GROQ_MODEL,
     });
-    throw new Error('GEMINI_API_KEY is not configured');
+    throw new Error('GROQ_API_KEY is not configured');
   }
 
-  console.info(`[import:${requestId}] gemini request start`, {
+  console.info(`[import:${requestId}] groq request start`, {
     batchIndex,
-    model: GEMINI_MODEL,
+    model: GROQ_MODEL,
     inputRows: input.length,
   });
 
   const body = {
-    contents: [
+    model: GROQ_MODEL,
+    temperature: 0.1,
+    max_tokens: 4096,
+    messages: [
+      {
+        role: 'system',
+        content: prompt,
+      },
       {
         role: 'user',
-        parts: [
-          {
-            text: `${prompt}\n\nINPUT:\n${JSON.stringify(input)}`,
-          },
-        ],
+        content: JSON.stringify(input),
       },
     ],
-    generationConfig: {
-      temperature: 0.1,
-      maxOutputTokens: 4096,
-    },
   };
 
   try {
-    const resp = await axios.post(GEMINI_URL, body, {
-      params: { key: GEMINI_API_KEY },
-      headers: { 'Content-Type': 'application/json' },
+    const resp = await axios.post(GROQ_URL, body, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${GROQ_API_KEY}`,
+      },
       timeout: 30_000,
     });
 
-    console.info(`[import:${requestId}] gemini response received`, {
+    console.info(`[import:${requestId}] groq response received`, {
       batchIndex,
-      hasCandidates: Boolean(resp.data?.candidates?.length),
+      hasChoices: Boolean(resp.data?.choices?.length),
       responseKeys: resp.data ? Object.keys(resp.data) : [],
     });
 
     return resp.data;
   } catch (err: any) {
-    console.error(`[import:${requestId}] gemini request failed`, {
+    console.error(`[import:${requestId}] groq request failed`, {
       batchIndex,
       message: err?.message,
       status: err?.response?.status,
@@ -356,11 +357,11 @@ const callGemini = async (input: any[], requestId: string, batchIndex: number) =
 };
 
 const processBatch = async (batch: any[], requestId = 'unknown', batchIndex = 0) => {
-  if (!GEMINI_ENABLED) {
-    console.warn(`[import:${requestId}] gemini unavailable; using deterministic fallback`, {
+  if (!GROQ_ENABLED) {
+    console.warn(`[import:${requestId}] groq unavailable; using deterministic fallback`, {
       batchIndex,
       rows: batch.length,
-      model: GEMINI_MODEL,
+      model: GROQ_MODEL,
     });
     return buildFallbackBatch(batch);
   }
@@ -369,22 +370,22 @@ const processBatch = async (batch: any[], requestId = 'unknown', batchIndex = 0)
   let attempts = 0;
   while (attempts < 3) {
     try {
-      const aiRaw = await callGemini(batch, requestId, batchIndex);
+      const aiRaw = await callGroq(batch, requestId, batchIndex);
       const text = extractText(aiRaw);
-      console.info(`[import:${requestId}] gemini payload extracted`, {
+      console.info(`[import:${requestId}] groq payload extracted`, {
         batchIndex,
         textLength: text.length,
         preview: text.slice(0, 300),
       });
       const arr = parseJsonArray(text);
-      console.info(`[import:${requestId}] gemini output parsed`, {
+      console.info(`[import:${requestId}] groq output parsed`, {
         batchIndex,
         records: arr.length,
       });
       return arr;
     } catch (err: any) {
       attempts += 1;
-      console.warn(`[import:${requestId}] gemini batch retry`, {
+      console.warn(`[import:${requestId}] groq batch retry`, {
         batchIndex,
         attempt: attempts,
         message: err?.message,
@@ -401,10 +402,7 @@ const extractText = (aiRaw: any) => {
     return aiRaw;
   }
 
-  const candidateText = aiRaw?.candidates?.[0]?.content?.parts
-    ?.map((part: any) => part?.text)
-    .filter(Boolean)
-    .join('');
+  const candidateText = aiRaw?.choices?.[0]?.message?.content;
 
   if (candidateText) {
     return candidateText;
@@ -432,7 +430,7 @@ const parseJsonArray = (text: string) => {
   const start = trimmed.indexOf('[');
   const end = trimmed.lastIndexOf(']');
   if (start === -1 || end === -1 || end < start) {
-    console.error('Invalid Gemini output', {
+    console.error('Invalid Groq output', {
       textPreview: trimmed.slice(0, 500),
       textLength: trimmed.length,
     });
