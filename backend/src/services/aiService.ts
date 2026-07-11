@@ -326,7 +326,6 @@ const callGemini = async (input: any[], requestId: string, batchIndex: number) =
     generationConfig: {
       temperature: 0.1,
       maxOutputTokens: 4096,
-      responseMimeType: 'application/json',
     },
   };
 
