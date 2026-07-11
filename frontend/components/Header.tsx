@@ -33,7 +33,7 @@ export default function Header({ onMenuClick, sidebarOpen }: Props) {
 
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-900 font-bold text-white">GE</div>
-            <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">Easy Growth</div>
+            <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">Grow Easy</div>
           </div>
         </div>
 
