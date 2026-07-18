@@ -47,11 +47,11 @@ export class ImportController {
     });
 
     const normalized = normalizeService.normalizeRecords(records);
-    const batches = batchService.splitIntoBatches(normalized, 25);
+    const batches = batchService.splitIntoBatches(normalized, 5); // Changed batch size to 5
     console.info(`[import:${requestId}] records normalized and batched`, {
       normalizedRows: normalized.length,
       batchCount: batches.length,
-      batchSize: 25,
+      batchSize: 5, // Updated batch size in log
     });
 
     let imported = 0;

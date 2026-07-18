@@ -1,4 +1,4 @@
-# CSV AI Exporter
+# CSV AI Importer
 
 AI-powered CSV importer that intelligently converts arbitrary CSV files into the **GrowEasy CRM** format using the **Groq AI** model.
 
@@ -6,7 +6,7 @@ AI-powered CSV importer that intelligently converts arbitrary CSV files into the
 
 ## 📌 Overview
 
-CSV AI Exporter enables users to upload CSV files from various sources with different column names and structures. Instead of relying on fixed headers, the application uses AI to understand the meaning of each column and automatically maps it to the required GrowEasy CRM fields.
+CSV AI Importer enables users to upload CSV files from various sources with different column names and structures. Instead of relying on fixed headers, the application uses AI to understand the meaning of each column and automatically maps it to the required GrowEasy CRM fields.
 
 ---
 

@@ -4,7 +4,7 @@ import { LeadsProvider } from '../components/LeadsProvider';
 import AppShell from '../components/AppShell';
 
 export const metadata = {
-  title: 'CSV AI Exporter',
+  title: 'CSV AI Importer',
   description: 'AI-powered CSV importer for GrowEasy CRM',
 };
 
